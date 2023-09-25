@@ -15,7 +15,7 @@ builder.Services.AddScoped(typeof(DbContext), typeof(IdentityDemoDbContext));
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<IdentityDemoDbContext>()
                    .AddDefaultTokenProviders();
 
@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Admin", policy => policy.RequireClaim("userDto", "Admin"));
+    options.AddPolicy("IsAdmin", policy => policy.RequireClaim("role", "admin"));
     options.AddPolicy("Customer", policy => policy.RequireClaim("userDto", "Customer"));
 });
 
