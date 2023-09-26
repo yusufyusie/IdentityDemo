@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using IdentityDemo.DTOs;
 using IdentityDemo.model;
+using IdentityDemo.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,14 +19,20 @@ namespace IdentityDemo.Controllers
         private readonly IdentityDemoDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IConfiguration configuration;
         private readonly IMapper mapper;
-        public AccountsController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-            IdentityDemoDbContext dbContext, IConfiguration configuration, IMapper mapper)
+        public AccountsController(UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IdentityDemoDbContext dbContext,
+            IConfiguration configuration,
+            IMapper mapper,
+            RoleManager<ApplicationRole> roleManager)
         {
             _context = dbContext;
             _userManager = userManager;
             _signInManager = signInManager;
+            roleManager = roleManager;
             this.configuration = configuration;
             this.mapper = mapper;
 
@@ -85,11 +92,54 @@ namespace IdentityDemo.Controllers
                 Expiration = expiration
             };
         }
-        public Task<string> RegisterRoleAsync(CreateOrUpdateRoleRequest request)
+        [HttpPost("register role")]
+        public async Task<IActionResult> RegisterRoleAsync(CreateOrUpdateRoleDto roleRegistrationDto)
         {
-            return _roleService.CreateOrUpdateAsync(request);
-        }
+            if (string.IsNullOrEmpty(roleRegistrationDto.Id))
+            {
+                // Create a new role.
+                var role = new ApplicationRole(roleRegistrationDto.Name, roleRegistrationDto.Description);
+                var result = await _roleManager.CreateAsync(role);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.TryAddModelError(error.Code, error.Description);
+                    }
 
+                    return BadRequest(ModelState);
+                }
+                await _roleManager.AddClaimAsync(role, new Claim("Create Role", "true"));
+                return StatusCode(201);
+            }
+            else
+            {
+                // Update an existing role.
+                var role = await _roleManager.FindByIdAsync(roleRegistrationDto.Id);
+
+                _ = role ?? throw new InvalidOperationException($"Role with ID {roleRegistrationDto.Id} cannot be found");
+                if (IdentityRoles.IsDefault(role.Name))
+                {
+                    ModelState.AddModelError(string.Empty, "Cannot update a default role");
+                    return BadRequest(ModelState);
+                }
+                role.Name = roleRegistrationDto.Name;
+                role.Description = roleRegistrationDto.Description;
+                role.NormalizedName = roleRegistrationDto.Name.ToUpperInvariant();
+                var result = await _roleManager.UpdateAsync(role);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.TryAddModelError(error.Code, error.Description);
+                    }
+
+                    return BadRequest(ModelState);
+                }
+                await _roleManager.AddClaimAsync(role, new Claim("Update Role", "true"));
+                return Ok(201);
+            }
+        }
         [HttpGet("listUsers")]
         public async Task<ActionResult<List<UserDTO>>> GetListUsers()
         {
