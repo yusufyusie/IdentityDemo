@@ -92,7 +92,14 @@ namespace IdentityDemo.Controllers
                 Expiration = expiration
             };
         }
-        [HttpPost("register role")]
+        [HttpGet("listUsers")]
+        public async Task<ActionResult<List<UserDTO>>> GetListUsers()
+        {
+            var queryable = _context.Users.AsQueryable();
+            var users = await queryable.OrderBy(x => x.UserName).ToListAsync();
+            return mapper.Map<List<UserDTO>>(users);
+        }
+        [HttpPost("register or update role")]
         public async Task<IActionResult> RegisterRoleAsync(CreateOrUpdateRoleDto roleRegistrationDto)
         {
             if (string.IsNullOrEmpty(roleRegistrationDto.Id))
@@ -140,12 +147,10 @@ namespace IdentityDemo.Controllers
                 return Ok(201);
             }
         }
-        [HttpGet("listUsers")]
-        public async Task<ActionResult<List<UserDTO>>> GetListUsers()
+        public async Task<ActionResult<List<RoleDto>>> GetListRoles()
         {
-            var queryable = _context.Users.AsQueryable();
-            var users = await queryable.OrderBy(x => x.UserName).ToListAsync();
-            return mapper.Map<List<UserDTO>>(users);
+            var roles = await _context.Roles.ToListAsync();
+            return mapper.Map<List<RoleDto>>(roles);
         }
     }
 }

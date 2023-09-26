@@ -8,9 +8,14 @@ namespace IdentityDemo.Helpers
     {
         public AutoMapperProfiles()
         {
+            // CreateMap<Source, Destination>();
+            // user
             CreateMap<ApplicationUser, UserDTO>(); ;
             CreateMap<UserForRegistrationDto, ApplicationUser>();
             CreateMap<UserCredentials, ApplicationUser>();
+            // role
+            CreateMap<ApplicationRole, RoleDto>();
+            CreateMap<CreateOrUpdateRoleDto, ApplicationRole>();
         }
     }
 }
