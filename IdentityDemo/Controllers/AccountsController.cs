@@ -152,5 +152,30 @@ namespace IdentityDemo.Controllers
             var roles = await _context.Roles.ToListAsync();
             return mapper.Map<List<RoleDto>>(roles);
         }
+        [HttpPut("{id}/permissions")]
+        public async Task<ActionResult<string>> UpdatePermissionsAsync(string id, UpdateRolePermissions permissions)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            _ = role ?? throw new InvalidOperationException($"Role with ID {id} cannot be found");
+            if (IdentityRoles.IsDefault(role.Name))
+            {
+                ModelState.AddModelError(string.Empty, "Cannot update a default role");
+                return BadRequest(ModelState);
+            }
+            var claims = await _roleManager.GetClaimsAsync(role);
+            var claimValues = claims.Select(x => x.Value).ToList();
+            var newClaims = permissions.Permissions.Except(claimValues);
+            var removedClaims = claimValues.Except(permissions.Permissions);
+            foreach (var newClaim in newClaims)
+            {
+                await _roleManager.AddClaimAsync(role, new Claim("Permission", newClaim));
+            }
+            foreach (var removedClaim in removedClaims)
+            {
+                var claim = claims.FirstOrDefault(x => x.Value == removedClaim);
+                await _roleManager.RemoveClaimAsync(role, claim);
+            }
+            return Ok();
+        }
     }
 }
