@@ -46,7 +46,7 @@ namespace IdentityDemo.Controllers
             }
         }
 
-        [HttpPost("register")]
+        [HttpPost("register user")]
         public async Task<ActionResult<AuthenticationResponse>> Register([FromForm] UserForRegistrationDto userRegistrationDto)
         {
             var user = mapper.Map<ApplicationUser>(userRegistrationDto);
@@ -85,6 +85,11 @@ namespace IdentityDemo.Controllers
                 Expiration = expiration
             };
         }
+        public Task<string> RegisterRoleAsync(CreateOrUpdateRoleRequest request)
+        {
+            return _roleService.CreateOrUpdateAsync(request);
+        }
+
         [HttpGet("listUsers")]
         public async Task<ActionResult<List<UserDTO>>> GetListUsers()
         {
