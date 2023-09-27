@@ -188,6 +188,7 @@ namespace IdentityDemo.Controllers
             return mapper.Map<List<RoleDto>>(roles);
         }
         [HttpGet("{id}/roles")]
+        [OpenApiOperation("Get a user's roles.", "")]
         public async Task<List<UserRoleDto>> GetRolesAsync(string id)
         {
             var userRoles = new List<UserRoleDto>();
@@ -209,30 +210,38 @@ namespace IdentityDemo.Controllers
         }
         [HttpPost("{id}/roles")]
         [OpenApiOperation("Update a user's assigned roles.", "")]
-        public Task<string> AssignRolesAsync(string id, UserRolesRequest request)
+        public async Task<string> AssignRolesAsync(string id, UserRolesRequest request)
         {
             ArgumentNullException.ThrowIfNull(request, nameof(request));
-            var user = _context.Users.Where(x => x.Id == id).FirstOrDefault();
-            _ = user ?? throw new InvalidOperationException($"User with ID {id} cannot be found");
+            var user = await _userManager.Users.Where(x => x.Id == id).FirstOrDefaultAsync();
+            _ = user ?? throw new InvalidOperationException(_t["User Not Found."]);
+            // Check if the user is an admin for which the admin role is getting disabled
+            if (await _userManager.IsInRoleAsync(user, IdentityRoles.Admin)
+                && request.UserRoles.Any(a => !a.Enabled && a.RoleName == IdentityRoles.Admin))
+            {
+                // Get count of users in Admin Role
+                int adminCount = (await _userManager.GetUsersInRoleAsync(IdentityRoles.Admin)).Count;
+            }
             foreach (var userRole in request.UserRoles)
             {
-                if (_roleManager.FindByNameAsync(userRole.RoleName).Result == null)
+                // Check if Role Exists
+                if (await _roleManager.FindByNameAsync(userRole.RoleName) is not null)
                 {
                     if (userRole.Enabled)
                     {
-                        if (!_userManager.IsInRoleAsync(user, userRole.RoleName).Result)
+                        if (!await _userManager.IsInRoleAsync(user, userRole.RoleName))
                         {
-                            _userManager.AddToRoleAsync(user, userRole.RoleName).Wait();
+                            await _userManager.AddToRoleAsync(user, userRole.RoleName);
                         }
-                        else
-                        {
-                            _userManager.RemoveFromRoleAsync(user, userRole.RoleName).Wait();
-                        }
+                    }
+                    else
+                    {
+                        await _userManager.RemoveFromRoleAsync(user, userRole.RoleName);
                     }
                 }
             }
-            _userManager.UpdateAsync(user).Wait();
-            return Task.FromResult("Success");
+            await _userManager.UpdateAsync(user);
+            return _t["User Roles Updated Successfully."];
 
         }
 
