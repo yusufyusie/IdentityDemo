@@ -13,6 +13,7 @@ namespace IdentityDemo.DTOs
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
         public string? Gender { get; set; }
-        public string? PhoneNumber { get; set; }
+        //public string? PhoneNumber { get; set; }
+        //public virtual ICollection<Name> Roles { get; set; }
     }
 }

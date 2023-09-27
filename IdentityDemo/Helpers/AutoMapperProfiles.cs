@@ -16,6 +16,8 @@ namespace IdentityDemo.Helpers
             // role
             CreateMap<ApplicationRole, RoleDto>();
             CreateMap<CreateOrUpdateRoleDto, ApplicationRole>();
+            // user role
+            CreateMap<ApplicationUserRole, UserRoleDto>();
         }
     }
 }
