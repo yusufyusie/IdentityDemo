@@ -5,7 +5,6 @@ using IdentityDemo.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using NSwag.Annotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -24,14 +23,12 @@ namespace IdentityDemo.Controllers
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IConfiguration configuration;
         private readonly IMapper mapper;
-        private readonly IStringLocalizer _t;
         public AccountsController(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IdentityDemoDbContext dbContext,
             IConfiguration configuration,
             IMapper mapper,
-            RoleManager<ApplicationRole> roleManager,
-            IStringLocalizer t)
+            RoleManager<ApplicationRole> roleManager)
         {
             _context = dbContext;
             _userManager = userManager;
@@ -39,7 +36,6 @@ namespace IdentityDemo.Controllers
             _roleManager = roleManager;
             this.configuration = configuration;
             this.mapper = mapper;
-            _t = t;
         }
         [HttpPost("login")]
         public async Task<ActionResult<AuthenticationResponse>> Login([FromForm] UserCredentials userCredentials)
@@ -92,7 +88,7 @@ namespace IdentityDemo.Controllers
                 throw new Exception("User creation failed! " + result.Errors.Select(x => x.Description).Aggregate((a, b) => a + ", " + b));
             }
             await _userManager.AddToRoleAsync(user, IdentityRoles.Basic);
-            var messages = new List<string> { string.Format(_t["User {0} Registered."], user.UserName) };
+            var messages = new List<string>();
             return string.Join(" ", messages);
 
 
@@ -187,7 +183,7 @@ namespace IdentityDemo.Controllers
             var roles = await _context.Roles.ToListAsync();
             return mapper.Map<List<RoleDto>>(roles);
         }
-        [HttpGet("{id}/roles")]
+        [HttpGet("{id}/users-roles")]
         [OpenApiOperation("Get a user's roles.", "")]
         public async Task<List<UserRoleDto>> GetRolesAsync(string id)
         {
@@ -208,13 +204,13 @@ namespace IdentityDemo.Controllers
 
             return userRoles;
         }
-        [HttpPost("{id}/roles")]
+        [HttpPost("{id}/update-assigned-roles")]
         [OpenApiOperation("Update a user's assigned roles.", "")]
         public async Task<string> AssignRolesAsync(string id, UserRolesRequest request)
         {
             ArgumentNullException.ThrowIfNull(request, nameof(request));
             var user = await _userManager.Users.Where(x => x.Id == id).FirstOrDefaultAsync();
-            _ = user ?? throw new InvalidOperationException(_t["User Not Found."]);
+            _ = user ?? throw new InvalidOperationException($"User with ID {id} cannot be found");
             // Check if the user is an admin for which the admin role is getting disabled
             if (await _userManager.IsInRoleAsync(user, IdentityRoles.Admin)
                 && request.UserRoles.Any(a => !a.Enabled && a.RoleName == IdentityRoles.Admin))
@@ -241,7 +237,7 @@ namespace IdentityDemo.Controllers
                 }
             }
             await _userManager.UpdateAsync(user);
-            return _t["User Roles Updated Successfully."];
+            return "Success";
 
         }
 
