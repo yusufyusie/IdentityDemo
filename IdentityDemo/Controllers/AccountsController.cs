@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
+using NSwag.Annotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -57,6 +58,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost("register user")]
+        [OpenApiOperation("Creates a new user.", "")]
         public async Task<ActionResult<AuthenticationResponse>> Register([FromForm] UserForRegistrationDto userRegistrationDto)
         {
             var user = mapper.Map<ApplicationUser>(userRegistrationDto);
@@ -72,6 +74,7 @@ namespace IdentityDemo.Controllers
             }
         }
         [HttpPost("self-register")]
+        [OpenApiOperation("Anonymous user creates a user.", "")]
         public async Task<string> SelfRegisterAsync([FromForm] UserForRegistrationDto userRegistrationDto)
         {
             var user = new ApplicationUser
@@ -128,6 +131,7 @@ namespace IdentityDemo.Controllers
             return mapper.Map<List<UserDTO>>(users);
         }
         [HttpPost("register or update role")]
+        [OpenApiOperation("Create or update a role.", "")]
         public async Task<IActionResult> RegisterRoleAsync([FromForm] CreateOrUpdateRoleDto roleRegistrationDto)
         {
             if (string.IsNullOrEmpty(roleRegistrationDto.Id))
@@ -177,6 +181,7 @@ namespace IdentityDemo.Controllers
             }
         }
         [HttpGet("listRoles")]
+        [OpenApiOperation("Get a list of all roles.", "")]
         public async Task<ActionResult<List<RoleDto>>> GetListRoles()
         {
             var roles = await _context.Roles.ToListAsync();
@@ -203,6 +208,7 @@ namespace IdentityDemo.Controllers
             return userRoles;
         }
         [HttpPost("{id}/roles")]
+        [OpenApiOperation("Update a user's assigned roles.", "")]
         public Task<string> AssignRolesAsync(string id, UserRolesRequest request)
         {
             ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -231,6 +237,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPut("{id}/permissions")]
+        [OpenApiOperation("Update a role's permissions.", "")]
         public async Task<ActionResult<string>> UpdatePermissionsAsync([FromForm] string id, UpdateRolePermissions permissions)
         {
             var role = await _roleManager.FindByIdAsync(id);
