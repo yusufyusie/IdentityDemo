@@ -24,14 +24,40 @@ namespace IdentityDemo.Controllers
             _roleManager = roleManager;
             this.mapper = mapper;
         }
-        [HttpGet("listRoles")]
+        [HttpGet]
         [OpenApiOperation("Get a list of all roles.", "")]
         public async Task<ActionResult<List<RoleDto>>> GetListRoles()
         {
             var roles = await _context.Roles.ToListAsync();
             return mapper.Map<List<RoleDto>>(roles);
         }
-        [HttpPost("register or update role")]
+        [HttpPut("{id}/permissions")]
+        [OpenApiOperation("Update a role's permissions.", "")]
+        public async Task<ActionResult<string>> UpdatePermissionsAsync([FromForm] string id, UpdateRolePermissions permissions)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            _ = role ?? throw new InvalidOperationException($"Role with ID {id} cannot be found");
+            if (IdentityRoles.IsDefault(role.Name))
+            {
+                ModelState.AddModelError(string.Empty, "Cannot update a default role");
+                return BadRequest(ModelState);
+            }
+            var claims = await _roleManager.GetClaimsAsync(role);
+            var claimValues = claims.Select(x => x.Value).ToList();
+            var newClaims = permissions.Permissions.Except(claimValues);
+            var removedClaims = claimValues.Except(permissions.Permissions);
+            foreach (var newClaim in newClaims)
+            {
+                await _roleManager.AddClaimAsync(role, new Claim("Permission", newClaim));
+            }
+            foreach (var removedClaim in removedClaims)
+            {
+                var claim = claims.FirstOrDefault(x => x.Value == removedClaim);
+                await _roleManager.RemoveClaimAsync(role, claim);
+            }
+            return Ok();
+        }
+        [HttpPost]
         [OpenApiOperation("Create or update a role.", "")]
         public async Task<IActionResult> RegisterRoleAsync([FromForm] CreateOrUpdateRoleDto roleRegistrationDto)
         {
@@ -80,32 +106,6 @@ namespace IdentityDemo.Controllers
                 await _roleManager.AddClaimAsync(role, new Claim("Update Role", "true"));
                 return Ok(201);
             }
-        }
-        [HttpPut("{id}/permissions")]
-        [OpenApiOperation("Update a role's permissions.", "")]
-        public async Task<ActionResult<string>> UpdatePermissionsAsync([FromForm] string id, UpdateRolePermissions permissions)
-        {
-            var role = await _roleManager.FindByIdAsync(id);
-            _ = role ?? throw new InvalidOperationException($"Role with ID {id} cannot be found");
-            if (IdentityRoles.IsDefault(role.Name))
-            {
-                ModelState.AddModelError(string.Empty, "Cannot update a default role");
-                return BadRequest(ModelState);
-            }
-            var claims = await _roleManager.GetClaimsAsync(role);
-            var claimValues = claims.Select(x => x.Value).ToList();
-            var newClaims = permissions.Permissions.Except(claimValues);
-            var removedClaims = claimValues.Except(permissions.Permissions);
-            foreach (var newClaim in newClaims)
-            {
-                await _roleManager.AddClaimAsync(role, new Claim("Permission", newClaim));
-            }
-            foreach (var removedClaim in removedClaims)
-            {
-                var claim = claims.FirstOrDefault(x => x.Value == removedClaim);
-                await _roleManager.RemoveClaimAsync(role, claim);
-            }
-            return Ok();
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using IdentityDemo.DTOs;
 using IdentityDemo.Identity.Tokens;
 using IdentityDemo.Identity.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using NSwag.Annotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -27,6 +29,8 @@ namespace IdentityDemo.Controllers
             this.configuration = configuration;
         }
         [HttpPost("login")]
+        [AllowAnonymous]
+        [OpenApiOperation("Request an access token using credentials.", "")]
         public async Task<ActionResult<AuthenticationResponse>> Login([FromForm] UserCredentials userCredentials)
         {
             var result = await _signInManager.PasswordSignInAsync(userCredentials.UserName,
