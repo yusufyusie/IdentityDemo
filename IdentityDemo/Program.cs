@@ -1,5 +1,7 @@
+using IdentityDemo;
 using IdentityDemo.Helpers;
-using IdentityDemo.model;
+using IdentityDemo.Identity.Roles;
+using IdentityDemo.Identity.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

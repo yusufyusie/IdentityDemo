@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using IdentityDemo.Identity.Users;
+using Microsoft.AspNetCore.Identity;
 
-namespace IdentityDemo.model
+namespace IdentityDemo.Models
 {
     public class ApplicationUserClaim : IdentityUserClaim<string>
     {

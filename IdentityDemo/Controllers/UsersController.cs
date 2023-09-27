@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using IdentityDemo.DTOs;
-using IdentityDemo.model;
+using IdentityDemo.Identity.Roles;
+using IdentityDemo.Identity.Tokens;
+using IdentityDemo.Identity.Users;
 using IdentityDemo.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

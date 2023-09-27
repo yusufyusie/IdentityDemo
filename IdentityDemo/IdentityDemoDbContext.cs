@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using IdentityDemo.Identity.Roles;
+using IdentityDemo.Identity.Users;
+using IdentityDemo.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace IdentityDemo.model
+namespace IdentityDemo
 {
-    public class IdentityDemoDbContext : IdentityDbContext<
-        ApplicationUser, ApplicationRole, string,
-        ApplicationUserClaim, ApplicationUserRole, ApplicationUserLogin,
-        ApplicationRoleClaim, ApplicationUserToken>
+    public class IdentityDemoDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string,
+                    ApplicationUserClaim, ApplicationUserRole, ApplicationUserLogin,
+                    ApplicationRoleClaim, ApplicationUserToken>
     {
         public IdentityDemoDbContext(DbContextOptions<IdentityDemoDbContext> options) : base(options)
         {

@@ -1,6 +1,6 @@
 ﻿using IdentityDemo.DTOs;
 
-namespace IdentityDemo.model
+namespace IdentityDemo.Identity.Users
 {
     public class UserRolesRequest
     {

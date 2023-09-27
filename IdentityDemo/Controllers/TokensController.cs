@@ -1,5 +1,6 @@
 ﻿using IdentityDemo.DTOs;
-using IdentityDemo.model;
+using IdentityDemo.Identity.Tokens;
+using IdentityDemo.Identity.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;

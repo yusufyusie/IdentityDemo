@@ -1,4 +1,4 @@
-﻿namespace IdentityDemo.model
+﻿namespace IdentityDemo.Identity.Tokens
 {
     public class AuthenticationResponse
     {

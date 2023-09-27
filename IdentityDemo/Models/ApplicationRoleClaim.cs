@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using IdentityDemo.Identity.Roles;
+using Microsoft.AspNetCore.Identity;
 
-namespace IdentityDemo.model
+namespace IdentityDemo.Models
 {
     public class ApplicationRoleClaim : IdentityRoleClaim<string>
     {
