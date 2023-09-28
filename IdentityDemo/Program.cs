@@ -1,5 +1,7 @@
+using IdentityDemo;
 using IdentityDemo.Helpers;
-using IdentityDemo.model;
+using IdentityDemo.Identity.Roles;
+using IdentityDemo.Identity.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +47,6 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
